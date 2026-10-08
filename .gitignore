@@ -1,0 +1,14 @@
+# NetBeans
+/build/
+/nbproject/private/
+/nbbuild/
+/dist/
+/.nb-gradle/
+
+# Compilados Java
+*.class
+
+# Archivos temporales
+*.log
+.DS_Store
+Thumbs.db
