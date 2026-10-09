@@ -93,6 +93,20 @@ BEGIN
     DELETE FROM usuarios WHERE id_usuario = _id_usuario;
 END $$
 
+CREATE PROCEDURE sp_listarusuarios()
+BEGIN
+    SELECT id_usuario, nombre_completo, email, rol, fecha_creacion
+    FROM usuarios ORDER BY nombre_completo;
+END $$
+
+CREATE PROCEDURE sp_buscarusuario(
+    IN _id_usuario INT
+)
+BEGIN
+    SELECT id_usuario, nombre_completo, email, rol, fecha_creacion
+    FROM usuarios WHERE id_usuario = _id_usuario;
+END $$
+
 -- --- CRUD: LIBROS ---
 CREATE PROCEDURE sp_insertarlibro(
     IN _titulo VARCHAR(150),
