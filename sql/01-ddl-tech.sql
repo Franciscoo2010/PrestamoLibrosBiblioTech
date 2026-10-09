@@ -140,10 +140,23 @@ CREATE PROCEDURE sp_insertarprestamo(
     IN _estado VARCHAR(20)
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+    UPDATE libros SET stock = stock - 1
+    WHERE id_libro = _id_libro AND stock > 0;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El libro no existe o no tiene ejemplares disponibles.';
+    END IF;
+
     INSERT INTO prestamos(id_usuario, id_libro, fecha_prestamo, fecha_devolucion_esperada, estado)
     VALUES (_id_usuario, _id_libro, _fecha_prestamo, _fecha_devolucion_esperada, _estado);
-    
-    UPDATE libros SET stock = stock - 1 WHERE id_libro = _id_libro;
+    COMMIT;
 END $$
 
 CREATE PROCEDURE sp_actualizarprestamo(
@@ -156,21 +169,59 @@ CREATE PROCEDURE sp_actualizarprestamo(
     IN _estado VARCHAR(20)
 )
 BEGIN
+    DECLARE _estado_anterior VARCHAR(20);
+    DECLARE _libro_anterior INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+    SELECT estado, id_libro INTO _estado_anterior, _libro_anterior
+    FROM prestamos WHERE id_prestamo = _id_prestamo FOR UPDATE;
+
+    IF _estado_anterior IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El préstamo no existe.';
+    END IF;
+
     UPDATE prestamos
-    SET id_usuario = _id_usuario,
-        id_libro = _id_libro,
-        fecha_prestamo = _fecha_prestamo,
-        fecha_devolucion_esperada = _fecha_devolucion_esperada,
+    SET
         fecha_devolucion_real = _fecha_devolucion_real,
         estado = _estado
     WHERE id_prestamo = _id_prestamo;
+
+    IF _estado_anterior <> 'DEVUELTO' AND _estado = 'DEVUELTO' THEN
+        UPDATE libros SET stock = stock + 1 WHERE id_libro = _libro_anterior;
+    END IF;
+    COMMIT;
 END $$
 
 CREATE PROCEDURE sp_eliminarprestamo(
     IN _id_prestamo INT
 )
 BEGIN
+    DECLARE _libro INT;
+    DECLARE _estado VARCHAR(20);
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+    SELECT id_libro, estado INTO _libro, _estado
+    FROM prestamos WHERE id_prestamo = _id_prestamo FOR UPDATE;
+
+    IF _estado IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El préstamo no existe.';
+    END IF;
+
     DELETE FROM prestamos WHERE id_prestamo = _id_prestamo;
+    IF _estado <> 'DEVUELTO' THEN
+        UPDATE libros SET stock = stock + 1 WHERE id_libro = _libro;
+    END IF;
+    COMMIT;
 END $$
 
 DELIMITER ;

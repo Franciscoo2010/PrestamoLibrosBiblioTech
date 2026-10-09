@@ -3,6 +3,7 @@ package org.rp.daoimpl;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import org.rp.dao.UsuarioDAO;
@@ -24,7 +25,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             cs.setString(4, u.getRol());
             cs.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Error al acceder a la base de datos.", e);
         }
     }
 
@@ -37,7 +38,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             cs.setString(4, u.getRol());
             cs.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Error al acceder a la base de datos.", e);
         }
     }
 
@@ -47,7 +48,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             cs.setInt(1, id);
             cs.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Error al acceder a la base de datos.", e);
         }
     }
 
@@ -66,7 +67,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 lista.add(u);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Error al acceder a la base de datos.", e);
         }
         return lista;
     }
@@ -86,21 +87,20 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Error al acceder a la base de datos.", e);
         }
         return null;
     }
 
     @Override
     public Usuario autenticar(String email, String password) {
-        try {
-            CallableStatement cs = getConn().prepareCall(
-                "SELECT id_usuario, nombre_completo, email, password, rol, fecha_creacion " +
-                "FROM usuarios WHERE email = ? AND password = ?");
+        try (PreparedStatement cs = getConn().prepareStatement(
+                "SELECT id_usuario, nombre_completo, email, rol, fecha_creacion " +
+                "FROM usuarios WHERE email = ? AND password = ?")) {
             cs.setString(1, email);
             cs.setString(2, password);
-            ResultSet rs = cs.executeQuery();
-            if (rs.next()) {
+            try (ResultSet rs = cs.executeQuery()) {
+              if (rs.next()) {
                 Usuario u = new Usuario();
                 u.setIdUsuario(rs.getInt("id_usuario"));
                 u.setNombreCompleto(rs.getString("nombre_completo"));
@@ -108,9 +108,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 u.setRol(rs.getString("rol"));
                 u.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
                 return u;
+              }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("No fue posible validar las credenciales.", e);
         }
         return null;
     }

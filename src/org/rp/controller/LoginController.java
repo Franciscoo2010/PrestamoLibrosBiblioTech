@@ -1,6 +1,5 @@
 package org.rp.controller;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -31,14 +30,20 @@ public class LoginController implements Initializable {
     @FXML
     private void handleLogin(ActionEvent event) {
         String email = txtEmail.getText().trim();
-        String pass = txtPassword.getText().trim();
+        String pass = txtPassword.getText();
 
         if (email.isEmpty() || pass.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Campos vacíos", "Por favor ingresa tu correo y contraseña.");
             return;
         }
 
-        Usuario u = usuarioDAO.autenticar(email, pass);
+        Usuario u;
+        try {
+            u = usuarioDAO.autenticar(email, pass);
+        } catch (RuntimeException ex) {
+            showAlert(Alert.AlertType.ERROR, "Error de conexión", "No fue posible conectarse a la base de datos. Verifica que MySQL esté activo y que bibliotech_in4cm exista.");
+            return;
+        }
 
         if (u == null) {
             showAlert(Alert.AlertType.ERROR, "Acceso denegado", "Credenciales incorrectas.");
@@ -48,33 +53,17 @@ public class LoginController implements Initializable {
         SessionContext.getInstance().login(u.getIdUsuario(), u.getNombreCompleto(), u.getEmail(), u.getRol());
 
         try {
-            String fxml;
-            switch (u.getRol()) {
-                case "ADMIN":
-                    fxml = "/org/rp/view/AdminView.fxml";
-                    break;
-                case "BIBLIOTECARIO":
-                    fxml = "/org/rp/view/BibliotecarioView.fxml";
-                    break;
-                default:
-                    fxml = "/org/rp/view/LibroView.fxml";
-                    break;
-            }
-
-            Parent root = FXMLLoader.load(getClass().getResource(fxml));
+            Parent root = FXMLLoader.load(getClass().getResource("/org/rp/view/LibroView.fxml"));
             Stage stage = (Stage) txtEmail.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("BiblioTech - " + u.getRol());
-        } catch (IOException e) {
-            // Si no existe la vista específica, carga la de libros
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("/org/rp/view/LibroView.fxml"));
-                Stage stage = (Stage) txtEmail.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("BiblioTech - " + u.getNombreCompleto());
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            stage.setResizable(true);
+            stage.setWidth(1100);
+            stage.setHeight(700);
+            stage.centerOnScreen();
+        } catch (Exception ex) {
+            SessionContext.getInstance().logout();
+            showAlert(Alert.AlertType.ERROR, "Error al abrir la aplicación", "No se pudo cargar la pantalla principal: " + ex.getMessage());
         }
     }
 

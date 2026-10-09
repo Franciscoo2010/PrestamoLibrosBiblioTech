@@ -19,6 +19,8 @@
         <HBox style="-fx-background-color: #16213e; -fx-padding: 15;" alignment="CENTER_LEFT" spacing="10">
             <Label text="📚 BiblioTech" style="-fx-text-fill: #e94560; -fx-font-size: 22px; -fx-font-weight: bold;" />
             <Label text="— Gestión de Préstamos" style="-fx-text-fill: #aaaaaa; -fx-font-size: 14px;" />
+            <Button text="Libros" onAction="#handleLibros" />
+            <Button text="Cerrar sesión" onAction="#handleCerrarSesion" />
         </HBox>
     </top>
 
@@ -34,10 +36,10 @@
             <ComboBox fx:id="cmbLibro" maxWidth="Infinity"
                       style="-fx-background-color: #0f3460; -fx-border-color: #e94560; -fx-border-radius: 4;" />
 
-            <Button text="📖 Registrar Préstamo" onAction="#handleRegistrarPrestamo" maxWidth="Infinity"
+            <Button fx:id="btnRegistrar" text="📖 Registrar Préstamo" onAction="#handleRegistrarPrestamo" maxWidth="Infinity"
                     style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />
 
-            <Button text="✅ Devolver Libro" onAction="#handleDevolver" maxWidth="Infinity"
+            <Button fx:id="btnDevolver" text="✅ Devolver Libro" onAction="#handleDevolver" maxWidth="Infinity"
                     style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />
         </VBox>
     </left>

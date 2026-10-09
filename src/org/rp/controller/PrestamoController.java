@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -24,12 +25,15 @@ import org.rp.daoimpl.UsuarioDAOImpl;
 import org.rp.model.Libro;
 import org.rp.model.Prestamo;
 import org.rp.model.Usuario;
+import org.rp.util.AppNavigation;
 import org.rp.util.SessionContext;
 
 public class PrestamoController implements Initializable {
 
     @FXML private ComboBox<Usuario> cmbUsuario;
     @FXML private ComboBox<Libro> cmbLibro;
+    @FXML private Button btnRegistrar;
+    @FXML private Button btnDevolver;
 
     @FXML private TableView<Prestamo> tblPrestamos;
     @FXML private TableColumn<Prestamo, Integer> colId;
@@ -53,6 +57,17 @@ public class PrestamoController implements Initializable {
         colDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionEsperada"));
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
+        boolean puedeGestionar = "ADMIN".equals(SessionContext.getInstance().getRol())
+                || "BIBLIOTECARIO".equals(SessionContext.getInstance().getRol());
+        if (!puedeGestionar) {
+            btnRegistrar.setDisable(true);
+            btnDevolver.setDisable(true);
+            cmbUsuario.setDisable(true);
+            cmbLibro.setDisable(true);
+            tblPrestamos.setDisable(true);
+            showAlert(Alert.AlertType.ERROR, "Acceso restringido", "Solo el personal de biblioteca puede gestionar préstamos.");
+            return;
+        }
         cmbUsuario.setItems(FXCollections.observableArrayList(usuarioDAO.listar()));
         cmbLibro.setItems(FXCollections.observableArrayList(libroDAO.listar()));
         cargarTabla();
@@ -82,8 +97,16 @@ public class PrestamoController implements Initializable {
         p.setFechaPrestamo(Date.valueOf(LocalDate.now()));
         p.setFechaDevolucionEsperada(Date.valueOf(LocalDate.now().plusDays(7)));
         p.setEstado("ACTIVO");
-        prestamoDAO.insertar(p);
+        try {
+            prestamoDAO.insertar(p);
+        } catch (RuntimeException ex) {
+            showAlert(Alert.AlertType.ERROR, "No se pudo registrar", ex.getMessage());
+            return;
+        }
         cargarTabla();
+        cmbLibro.setItems(FXCollections.observableArrayList(libroDAO.listar()));
+        cmbLibro.getSelectionModel().clearSelection();
+        cmbUsuario.getSelectionModel().clearSelection();
         showAlert(Alert.AlertType.INFORMATION, "Éxito", "Préstamo registrado. Devolución esperada en 7 días.");
     }
 
@@ -94,10 +117,20 @@ public class PrestamoController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Sin selección", "Selecciona un préstamo para devolver.");
             return;
         }
+        if ("DEVUELTO".equals(sel.getEstado())) {
+            showAlert(Alert.AlertType.WARNING, "Préstamo cerrado", "Este préstamo ya fue devuelto.");
+            return;
+        }
         sel.setFechaDevolucionReal(Date.valueOf(LocalDate.now()));
         sel.setEstado("DEVUELTO");
-        prestamoDAO.actualizar(sel);
+        try {
+            prestamoDAO.actualizar(sel);
+        } catch (RuntimeException ex) {
+            showAlert(Alert.AlertType.ERROR, "No se pudo devolver", ex.getMessage());
+            return;
+        }
         cargarTabla();
+        cmbLibro.setItems(FXCollections.observableArrayList(libroDAO.listar()));
         showAlert(Alert.AlertType.INFORMATION, "Éxito", "Libro devuelto correctamente.");
     }
 
@@ -107,5 +140,13 @@ public class PrestamoController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    @FXML private void handleLibros(ActionEvent event) {
+        AppNavigation.open(event, "/org/rp/view/LibroView.fxml", "BiblioTech - Libros");
+    }
+
+    @FXML private void handleCerrarSesion(ActionEvent event) {
+        AppNavigation.logout(event);
     }
 }

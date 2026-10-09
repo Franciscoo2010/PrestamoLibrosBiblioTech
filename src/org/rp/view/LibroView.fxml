@@ -20,6 +20,8 @@
         <HBox style="-fx-background-color: #16213e; -fx-padding: 15;" alignment="CENTER_LEFT" spacing="10">
             <Label text="📚 BiblioTech" style="-fx-text-fill: #e94560; -fx-font-size: 22px; -fx-font-weight: bold;" />
             <Label text="— Gestión de Libros" style="-fx-text-fill: #aaaaaa; -fx-font-size: 14px;" />
+            <Button fx:id="btnPrestamos" text="Préstamos" onAction="#handlePrestamos" />
+            <Button text="Cerrar sesión" onAction="#handleCerrarSesion" />
         </HBox>
     </top>
 
@@ -46,11 +48,11 @@
             <TextField fx:id="txtAnio" promptText="Año"
                        style="-fx-background-color: #0f3460; -fx-text-fill: white; -fx-border-color: #e94560; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;" />
 
-            <Button text="➕ Insertar" onAction="#handleInsertar" maxWidth="Infinity"
+            <Button fx:id="btnInsertar" text="➕ Insertar" onAction="#handleInsertar" maxWidth="Infinity"
                     style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />
-            <Button text="✏ Actualizar" onAction="#handleActualizar" maxWidth="Infinity"
+            <Button fx:id="btnActualizar" text="✏ Actualizar" onAction="#handleActualizar" maxWidth="Infinity"
                     style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />
-            <Button text="🗑 Eliminar" onAction="#handleEliminar" maxWidth="Infinity"
+            <Button fx:id="btnEliminar" text="🗑 Eliminar" onAction="#handleEliminar" maxWidth="Infinity"
                     style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />
             <Button text="🧹 Limpiar" onAction="#handleLimpiar" maxWidth="Infinity"
                     style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;" />

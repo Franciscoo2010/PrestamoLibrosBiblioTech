@@ -35,6 +35,14 @@ INSERT INTO prestamos (id_usuario, id_libro, fecha_prestamo, fecha_devolucion_es
 (3, 4, '2026-09-15', '2026-09-29', 'ATRASADO'),
 (4, 5, '2026-10-02', '2026-10-16', 'ACTIVO');
 
+-- Reflejar en el inventario los préstamos que todavía no han sido devueltos
+UPDATE libros l
+SET l.stock = l.stock - (
+    SELECT COUNT(*)
+    FROM prestamos p
+    WHERE p.id_libro = l.id_libro AND p.estado <> 'DEVUELTO'
+);
+
 -- 4. Consultas de validación mediante Vistas
 SELECT * FROM vw_lista_usuarios;
 SELECT * FROM vw_lista_libros;
