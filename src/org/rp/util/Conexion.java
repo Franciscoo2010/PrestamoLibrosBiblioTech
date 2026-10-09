@@ -11,8 +11,8 @@ public class Conexion {
 
     private static final String URL = setting("bibliotech.db.url", "BIBLIOTECH_DB_URL",
             "jdbc:mysql://localhost:3306/bibliotech_in4cm?serverTimezone=UTC");
-    private static final String USER = setting("bibliotech.db.user", "BIBLIOTECH_DB_USER", "root");
-    private static final String PASSWORD = setting("bibliotech.db.password", "BIBLIOTECH_DB_PASSWORD", "");
+    private static final String USER = setting("bibliotech.db.user", "BIBLIOTECH_DB_USER", "IN4CM");
+    private static final String PASSWORD = setting("bibliotech.db.password", "BIBLIOTECH_DB_PASSWORD", "#NdimAM4");
 
     private Conexion() {
     }
